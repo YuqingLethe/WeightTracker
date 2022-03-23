@@ -5,6 +5,7 @@ package yoki.demo.controller;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,7 @@ public class WeightRecordController {
      * @throws IOException
      */
     @RequestMapping(value = "/login")
-    boolean login(@RequestParam("userToken") String userToken) throws IOException {
+    boolean login(@RequestBody String userToken) throws IOException {
         System.out.println("LOg in");
         switch(userToken) {
             case "xinran0210":

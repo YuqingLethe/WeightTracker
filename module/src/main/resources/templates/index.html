@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LogIn</title>
+    <script type="text/javascript">
+        function send() {
+            login();
+
+        }
+        function login() {
+            let loginString = document.getElementById("username").value;
+            let request = {userToken: loginString};
+            fetch('./record/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(request)
+            }).then(response => {
+                updateResult('loginResult', response.json());
+            })
+        }
+
+        function updateResult(eleId, msg) {
+            document.getElementById(eleId).innerHTML = msg;
+        }
+    </script>
+</head>
+<body>
+<div id="scpContent" class="contentBox">
+    <h1>Record your daily weight </h1>
+    <div>
+        <h4>User Token </h4>
+        <input size=30 type="password" placeholder="<FirstName><birthday_MMDD>" id="username">
+    </div>
+
+    <div>
+        <h4>Weight value</h4>
+        <input type="text" placeholder="xxx.x" id="weightNumber">
+        <input type="radio" id="weightType1" value="pounds" checked>
+        <label for="weightType1">Pounds</label>
+        <input type="radio" id="weightType2" value="kilograms">
+        <label for="weightType2">Kilograms</label>
+        <input type="radio" id="weightType3" value="grams">
+        <label for="weightType3">Jin</label>
+    </div>
+
+    <div>
+        <h4>Input Time slot</h4>
+        <div>
+            <input type="radio" id="typeChoice1" name="timeType" value="morning" checked>
+            <label for="typeChoice1">Fasten Morning</label>
+            <input type="radio" id="typeChoice2" name="timeType" value="noon">
+            <label for="typeChoice2">Noon</label>
+            <input type="radio" id="typeChoice3" name="timeType" value="afterDefecate">
+            <label for="typeChoice3">Day time after defecate</label>
+            <input type="radio" id="typeChoice4" name="timeType" value="lateNight">
+            <label for="typeChoice4">Late night</label>
+        </div>
+    </div>
+
+    <div>
+        <h5></h5>
+        <input type="submit" value="Record" onclick="send()">
+        <pre id="loginResult"></pre>
+        <pre id="recordResult"></pre>
+    </div>
+</div>
+
+</body>
+</html>

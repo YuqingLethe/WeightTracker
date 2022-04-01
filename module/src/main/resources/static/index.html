@@ -11,24 +11,26 @@
         }
         function login() {
             let loginString = document.getElementById("username").value;
-            fetch('/weight/login', {
+
+            return fetch('/weight/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: loginString
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`Login error: ${response.status}`);
+            }).then(response => response.json()
+            ).then (data => {
+                if (data === true) {
+                    updateResult('loginResult', 'User verified.');
+                } else {
+                    updateResult('loginResult', 'Unknown user.');
                 }
-                updateResult('loginResult', response.json());
+            }).catch (response => {
+                throw new Error(`Login error: ${response.status}, data is not recorded.`);
             });
-            return new Promise(function (resolve) {
-                resolve('Login Succeed!')
-            })
         }
 
-        function record() {
+        async function record() {
             // Get the weight in pounds
             const weightNum = _getWeightInPound();
             // Get the date
@@ -45,28 +47,24 @@
             // Get timeslot
             const timeSlot = document.querySelector('input[name="timeType"]:checked').value;
 
-            fetch(`/weight/writeToCSV?weight=${weightNum}&timeSlot=${timeSlot}&yyyy=${yyyy}&mm=${mm}&dd=${dd}`, {
-                method: 'GET',
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`writeToCSV error: ${response.status}`);
-                }
-                updateResult('recordResult', response.json());
-            });
-
+            let res = await fetch(`/weight/writeToCSV?weight=${weightNum}&timeSlot=${timeSlot}&yyyy=${yyyy}&mm=${mm}&dd=${dd}`);
+            let msg = await res.text();
+            console.log(msg);
+            updateResult('recordResult', msg);
         }
 
         function _getWeightInPound() {
             const weightNum = document.getElementById("weightNumber").value;
             const weightUnit = document.querySelector('input[name="weightUnit"]:checked').value;
+            let finalWeight = weightNum;
 
             if (weightUnit == 'kilograms') {
-                return 0.45359237*weightNum;
+                finalWeight = 2.20462*weightNum;
             } else if (weightUnit == 'jin') {
-                return weightNum*2*0.45359237;
-            } else {
-                return weightNum;
+                finalWeight = weightNum/2*2.20462;
             }
+            console.log(parseFloat(finalWeight).toFixed(2));
+            return parseFloat(finalWeight).toFixed(2);
         }
 
         function updateResult(eleId, msg) {

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import yoki.demo.model.TimeSlot;
 import yoki.demo.model.UserEnum;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -51,11 +52,11 @@ public class WeightRecordController {
 
     @RequestMapping(value = "/writeToCSV")
     @ResponseBody
-    boolean recordToCSV(@RequestParam String weight, @RequestParam String timeSlot,
+    String recordToCSV(@RequestParam String weight, @RequestParam String timeSlot,
                      @RequestParam String yyyy, @RequestParam String mm, @RequestParam String dd) throws IOException {
 
         if (USERNAME == UserEnum.INVALID) {
-            return false;
+            return "UserToken is invalid.";
         }
         String date = yyyy + '-' + mm + '-' + dd;
         TimeSlot ts = TimeSlot.FASTEN_MORNING;
@@ -71,9 +72,8 @@ public class WeightRecordController {
                 break;
         }
 
-
         String[] row = new String[]{weight, date, ts.name()};
-        logger.debug("weight writeToCSV user=" + USERNAME.name() + " weight=" + weight + " date=" + date + " slot=" + ts.name());
+        logger.info("weight writeToCSV user=" + USERNAME.name() + " weight=" + weight + " date=" + date + " slot=" + ts.name());
 
         FileWriter csvWriter = createNewCSV(this.USERNAME.name());
         csvWriter.append(String.join(",", row));
@@ -81,7 +81,7 @@ public class WeightRecordController {
 
         csvWriter.flush();
         csvWriter.close();
-        return true;
+        return "Weight " + weight + " pounds saved for " + mm + "/" + dd;
     }
 
     private FileWriter createNewCSV(String fileName) throws IOException{
@@ -92,12 +92,44 @@ public class WeightRecordController {
             csvWriter.append(",");
             csvWriter.append("Date");
             csvWriter.append(",");
-            csvWriter.append("Time Slot");
+            csvWriter.append("TimeSlot");
             csvWriter.append("\n");
             return csvWriter;
         } catch (Exception e) {
             logger.error("createNewCSV()" + e);
             return null;
         }
+    }
+
+    private String findFile(String fileName) throws IOException {
+        File directory = new File("/home/user/");
+
+        // store all names with same name
+        // with/without extension
+        String[] flist = directory.list();
+        int flag = 0;
+        if (flist == null) {
+            logger.error("Weight findFile() Empty directory.");
+            return false;
+        } else {
+            if (flist.length != 1) {
+                logger.error("weight, findFile() more than one file found");
+            } else {
+                String currFile = flist[0];
+            }
+            for (int i = 0; i < flist.length; i++) {
+                String currFile = flist[i];
+                if (currFile.equalsIgnoreCase(fileName)) {
+                    logger.info("WeightTracker, findFile() " + currFile + " found");
+                    flag = 1;
+                }
+            }
+        }
+
+        if (flag == 0) {
+            createNewCSV(fileName);
+            logger.info("WeightTracker, " + fileName + "File Not Found");
+        }
+        return "Succeed";
     }
 }

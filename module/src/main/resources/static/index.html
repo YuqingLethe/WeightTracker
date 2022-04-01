@@ -7,25 +7,66 @@
     <title>LogIn</title>
     <script type="text/javascript">
         function send() {
-            login();
-
+            return login().then(record);
         }
         function login() {
             let loginString = document.getElementById("username").value;
-            let request = {"userToken": loginString};
-            fetch('/record/login', {
+            fetch('/weight/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(request)
+                body: loginString
             }).then(response => {
                 if (!response.ok) {
                     throw new Error(`Login error: ${response.status}`);
                 }
-                console.log(response);
-                updateResult('loginResult', response.text());
+                updateResult('loginResult', response.json());
             });
+            return new Promise(function (resolve) {
+                resolve('Login Succeed!')
+            })
+        }
+
+        function record() {
+            // Get the weight in pounds
+            const weightNum = _getWeightInPound();
+            // Get the date
+            let date = document.getElementById("inputDate").value;
+            const today = new Date();
+            let yyyy = today.getFullYear().toString();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            if (date != null && date != "") {
+                yyyy = date.substring(4);
+                mm = date.substring(0, 2);
+                dd = date.substring(2, 4);
+            }
+            // Get timeslot
+            const timeSlot = document.querySelector('input[name="timeType"]:checked').value;
+
+            fetch(`/weight/writeToCSV?weight=${weightNum}&timeSlot=${timeSlot}&yyyy=${yyyy}&mm=${mm}&dd=${dd}`, {
+                method: 'GET',
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`writeToCSV error: ${response.status}`);
+                }
+                updateResult('recordResult', response.json());
+            });
+
+        }
+
+        function _getWeightInPound() {
+            const weightNum = document.getElementById("weightNumber").value;
+            const weightUnit = document.querySelector('input[name="weightUnit"]:checked').value;
+
+            if (weightUnit == 'kilograms') {
+                return 0.45359237*weightNum;
+            } else if (weightUnit == 'jin') {
+                return weightNum*2*0.45359237;
+            } else {
+                return weightNum;
+            }
         }
 
         function updateResult(eleId, msg) {
@@ -38,23 +79,29 @@
     <h1>Record your daily weight </h1>
     <div>
         <h4>User Token </h4>
-        <input size=30 type="password" placeholder="<FirstName><birthday_MMDD>" id="username">
+        <input size=30 type="password" value="yuqing0601" placeholder="<FirstName><birthday_MMDD>" id="username">
     </div>
 
     <div>
         <h4>Weight value</h4>
-        <input type="text" placeholder="xxx.x" id="weightNumber">
-        <input type="radio" id="weightType1" value="pounds" checked>
+        <input type="text" placeholder="xxx.x" id="weightNumber" value="125.6">
+        <input type="radio" name="weightUnit" id="weightType1" value="pounds" checked>
         <label for="weightType1">Pounds</label>
-        <input type="radio" id="weightType2" value="kilograms">
+        <input type="radio" name="weightUnit" id="weightType2" value="kilograms">
         <label for="weightType2">Kilograms</label>
-        <input type="radio" id="weightType3" value="grams">
+        <input type="radio" name="weightUnit" id="weightType3" value="jin">
         <label for="weightType3">Jin</label>
     </div>
 
     <div>
         <h4>Record Time slot</h4>
         <div>
+            Enter date if not today (Optional)
+            <input type="text" placeholder="MMDDYYYY" id="inputDate">
+        </div>
+
+        <div>
+            <br/>Select time slot of the day <br />
             <input type="radio" id="typeChoice1" name="timeType" value="morning" checked>
             <label for="typeChoice1">Fasten Morning</label>
             <input type="radio" id="typeChoice2" name="timeType" value="noon">

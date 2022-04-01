@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class WeighttrackerApplication {
 
     public static void main(String[] args) {
-        System.out.println("main");
         SpringApplication.run(WeighttrackerApplication.class, args);
     }
 
